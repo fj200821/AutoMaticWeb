@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SystemUserMapper">
+	<select id="findUser" parameterType="Map" resultType="Map">
+		select * from systemuser where name = #{name} and password=#{password}
+	</select>
+
+	<select id="querySystemUser" parameterType="Map" resultType="Map">
+		select a.*,c.name as statusValue,d.rolename,ll.LoginDateTime,log.LogoutDateTime  from systemuser a
+		left join systemroleuser b on a.userid = b.userid
+		left join systemrole d on b.roleid = d.roleid
+		left join systemdict c on a.status = c.code and c.pcode = 'status'
+		left join (
+			select max(LoginDateTime) as LoginDateTime,UserId
+			from login_log
+			group by UserId
+		) ll on b.UserId = ll.UserId
+		left join login_log log on ll.LoginDateTime = log.LoginDateTime and ll.UserId = log.UserId
+		<where>
+			1=1
+			<if test="username != null and username != ''">
+				and a.firstName like '%${username}%'
+			</if>
+			<if test="status != null and status != ''">
+				and a.status = #{status}
+			</if>
+			<if test="roleid != null and roleid != ''">
+				and b.roleId = #{roleid}
+			</if>
+		</where>
+		order by log.LogoutDateTime,ll.LoginDateTime desc
+	</select>
+
+	<select id="querySystemUserWithRole" parameterType="Map" resultType="Map">
+		select DISTINCT a.*,c.name as statusValue from systemuser a
+		left join systemroleuser b on a.userid = b.userid
+		left join systemrole d on b.roleid = d.roleid
+		left join systemdict c on a.status = c.code and c.pcode = 'status'
+		<where>
+			1=1 and b.roleuserid is null
+			<if test="username != null and username != ''">
+				and a.firstName like '%${username}%'
+			</if>
+			<if test="status != null and status != ''">
+				and a.status = #{status}
+			</if>
+			<if test="roleid != null and roleid != ''">
+				and b.roleId = #{roleid}
+			</if>
+		</where>
+	</select>
+
+	<select id="querySystemUserByRoleCode" parameterType="Map" resultType="Map">
+		SELECT a.*
+		FROM systemuser a
+		INNER JOIN systemroleuser b on a.UserId = b.UserId
+  		INNER JOIN  systemrole c on c.RoleId = b.RoleId
+		WHERE c.RoleCode = #{rolecode}
+	</select>
+
+	<select id="findUserByLoginId" parameterType="String" resultType="Map">
+		select * from systemuser where LoginId = #{loginId}
+	</select>
+</mapper>

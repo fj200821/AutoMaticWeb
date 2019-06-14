@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SystemMenuMapper">
+    <select id="queryMenuListByUserId" parameterType="Map" resultType="cn.edu.hpu.autoweb.entity.SystemMenu">
+        select b.*
+        from useraccess a
+        inner join systemmenu b on a.AccessId = b.MenuId
+        <where>
+            b.Status = 'Used'
+            <if test="userId != null and userId != ''">
+                and a.UserId = #{userId}
+            </if>
+            <choose>
+                <when test="Pid != null and Pid != ''">
+                    and b.Pid = #{Pid}
+                </when>
+                <otherwise>
+                    and b.Pid = -1
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY b.seq
+    </select>
+
+    <select id="queryMenuList" parameterType="Map" resultType="cn.edu.hpu.autoweb.entity.SystemMenu">
+        select b.*
+        from systemmenu b
+        <where>
+            b.Status = 'Used'
+            <choose>
+                <when test="Pid != null and Pid != ''">
+                    and b.Pid = #{Pid}
+                </when>
+                <otherwise>
+                    and (b.Pid = '' OR b.pid is null)
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY b.seq
+    </select>
+
+    <select id="queryMenuListForMap" parameterType="Map" resultType="Map">
+        select b.*,a.MenuName as PMenuName,c.name as StatusValue
+        from systemmenu b
+        LEFT JOIN systemmenu a on b.Pid = a.menuId
+        LEFT JOIN systemdict c on b.status = c.code and c.pcode = 'Status'
+        <where>
+            1=1
+            <choose>
+                <when test="parentId != null and parentId != ''">
+                    and b.Pid = #{parentId}
+                </when>
+                <otherwise>
+                    and (b.Pid = '' OR b.pid is null)
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY b.seq
+    </select>
+
+    <select id="queryParentListByMenuId" parameterType="Map" resultType="Map">
+        SELECT b.*
+        FROM systemmenu a
+        LEFT JOIN  systemmenu b on b.PId = a.PId
+        where a.MenuId = #{menuid}
+    </select>
+
+    <insert id="insertIcon" parameterType="Map" >
+        INSERT INTO systemicon
+        VALUES (#{menuName})
+    </insert>
+
+    <update id="updateMenuStatus" parameterType="Map">
+        update systemmenu set status = #{status} where menuId = #{id}
+    </update>
+
+
+    <select id="queryMenuListByRoleId" parameterType="Map" resultType="cn.edu.hpu.autoweb.entity.SystemMenu">
+        select b.*
+        from roleaccess a
+        inner join systemmenu b on a.AccessId = b.MenuId
+        <where>
+            b.Status = 'Used'
+            <if test="roleId != null and roleId != ''">
+                and a.RoleId = #{roleId}
+            </if>
+            <choose>
+                <when test="Pid != null and Pid != ''">
+                    and b.Pid = #{Pid}
+                </when>
+                <otherwise>
+                    and b.Pid = -1
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY b.seq
+    </select>
+
+
+    <select id="queryMenuListByRoleIdAndUserId" parameterType="Map" resultType="cn.edu.hpu.autoweb.entity.SystemMenu">
+        select * from (
+        select b.*
+        from roleaccess a
+        inner join systemmenu b on a.AccessId = b.MenuId
+        <where>
+            b.Status = 'Used'
+            <if test="roleId != null and roleId != ''">
+                and a.RoleId = #{roleId}
+            </if>
+            <choose>
+                <when test="Pid != null and Pid != ''">
+                    and b.Pid = #{Pid}
+                </when>
+                <otherwise>
+                    and b.Pid = -1
+                </otherwise>
+            </choose>
+        </where>
+        union
+        select b.*
+        from useraccess a
+        inner join systemmenu b on a.AccessId = b.MenuId
+        <where>
+            b.Status = 'Used'
+            <if test="userId != null and userId != ''">
+                and a.UserId = #{userId}
+            </if>
+            <choose>
+                <when test="Pid != null and Pid != ''">
+                    and b.Pid = #{Pid}
+                </when>
+                <otherwise>
+                    and b.Pid = -1
+                </otherwise>
+            </choose>
+        </where>
+        ) b
+        ORDER BY b.seq
+    </select>
+</mapper>

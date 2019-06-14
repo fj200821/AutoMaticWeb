@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SystemLoginMapper">
+    <select id="queryUserByUserIdAndPassword" parameterType="Map" resultType="cn.edu.hpu.autoweb.entity.SystemUser">
+        select * from systemuser
+        <where>
+            1=1
+            and LoginId = #{userName}
+            and Password = #{password}
+        </where>
+    </select>
+
+    <select id="queryAllLonginLogs" parameterType="String" resultType="cn.edu.hpu.autoweb.entity.LoginLog">
+        select * from login_log where UserId = #{longId} and LogoutDateTime is null
+    </select>
+
+    <update id="updateLogLog" parameterType="String">
+        update login_log set LogoutDateTime = now() where UserId = #{longId} and LogoutDateTime is null
+    </update>
+</mapper>

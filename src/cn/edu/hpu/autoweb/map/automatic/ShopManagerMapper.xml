@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ShopManagerMapper">
+    <select id="queryShop" parameterType="Map" resultType="Map">
+        select shop.*,tmp.shop_total_num,tmp_today.shop_total_num_today
+        from shop
+        left join (
+          select sum(sell_num) as shop_total_num,shop_id
+          from goods
+          group by shop_id
+        ) tmp on shop.id = tmp.shop_id
+        left join (
+          select sum(goods_item.add_num) as shop_total_num_today,goods.shop_id
+          from goods_item
+          left join goods on goods_item.goods_id = goods.id
+          where goods_item.create_time >= #{today}
+          group by goods.shop_id
+        ) tmp_today on shop.id = tmp_today.shop_id
+        where 1=1
+        <if test="shop_id != null and shop_id != ''">
+            and shop.shop_id like '%${shop_id}%'
+        </if>
+        order by shop_total_num desc,shop_total_num_today desc
+    </select>
+
+    <select id="queryShopCounts" resultType="Integer">
+        select count(*) from shop
+    </select>
+</mapper>

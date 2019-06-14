@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="FilePathMapper">
+	<delete id="deleteFilePathByTableId" parameterType="Map" >
+		DELETE FROM filepath where tableName=#{tablename} and tableid = #{tableid}
+	</delete>
+	
+	<select id="queryFilesByTableNameAndTableId" parameterType="Map" resultType="Map">
+		select * from filepath  where tableName=#{tablename} and tableid = #{tableid}
+	</select>
+</mapper>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="GoodsManagerMapper">
+    <select id="queryGoods" parameterType="Map" resultType="Map">
+        select goods.* ,shop.shop_id as shop_id_true,tmp.query_add_num
+        from goods
+        left join category_cid on goods.cid = category_cid.cid
+        left join shop on goods.shop_id = shop.id
+        left join (
+        select sum(add_num) as query_add_num,goods_id
+        from goods_item
+        where 1=1
+        <if test="enddatetime != null and enddatetime != ''">
+            <![CDATA[and goods_item.create_time <= #{enddatetime}]]>
+        </if>
+        and goods_item.create_time >=(
+        select min(goods_item.create_time )
+        from goods_item
+        where 1=1
+        and goods_item.create_time >= #{startdatetime}
+        <if test="enddatetime != null and enddatetime != ''">
+            <![CDATA[and goods_item.create_time <= #{enddatetime}]]>
+        </if>
+        )
+        group by goods_id
+        ) tmp on goods.id = tmp.goods_id
+        where 1=1
+        <if test="secondCategory_ids != null and secondCategory_ids.size > 0">
+            and category_cid.category_id in
+            <foreach collection="secondCategory_ids" item="secondCategoryid" open="(" close=")" separator=",">
+                #{secondCategoryid}
+            </foreach>
+        </if>
+        <if test="secondCategory_id != null and secondCategory_id != ''">
+            and category_cid.category_id = #{secondCategory_id}
+        </if>
+        <if test="goods_name != null and goods_name != ''">
+            and goods.goods_name like '%${goods_name}%'
+            or goods.goods_id like '%${goods_name}%'
+        </if>
+        <if test="createStartDateTime != null and createStartDateTime != ''">
+            and goods.create_time >= CONCAT('${createStartDateTime}' ,' 00:00:00')
+            <![CDATA[and goods.create_time <= CONCAT('${createStartDateTime}' ,' 23:59:59')]]>
+        </if>
+        <if test="goodsIds != null and goodsIds.length > 0 ">
+            and goods.id in
+            <foreach collection="goodsIds" item="goodsId" open="(" close=")" separator=",">
+                #{goodsId}
+            </foreach>
+        </if>
+        order by tmp.query_add_num desc
+    </select>
+
+    <select id="queryGoods2" parameterType="Map" resultType="Map">
+        select distinct goods.* ,shop.shop_id as shop_id_true
+        from goods
+        left join category_cid on goods.cid = category_cid.cid
+        left join shop on goods.shop_id = shop.id
+        where 1=1
+        <if test="secondCategory_ids != null and secondCategory_ids.size > 0">
+            and category_cid.category_id in
+            <foreach collection="secondCategory_ids" item="secondCategoryid" open="(" close=")" separator=",">
+                #{secondCategoryid}
+            </foreach>
+        </if>
+        <if test="secondCategory_id != null and secondCategory_id != ''">
+            and category_cid.category_id = #{secondCategory_id}
+        </if>
+        <if test="goods_name != null and goods_name != ''">
+            and goods.goods_name like '%${goods_name}%'
+            or goods.goods_id like '%${goods_name}%'
+        </if>
+        <if test="createStartDateTime != null and createStartDateTime != ''">
+            and goods.create_time >= CONCAT('${createStartDateTime}' ,' 00:00:00')
+            <![CDATA[and goods.create_time <= CONCAT('${createStartDateTime}' ,' 23:59:59')]]>
+        </if>
+        <if test="goodsIds != null">
+            <if test="goodsIds != null and goodsIds.length > 0 ">
+                and goods.id in
+                <foreach collection="goodsIds" item="goodsId" open="(" close=")" separator=",">
+                    #{goodsId}
+                </foreach>
+            </if>
+        </if>
+        order by goods.add_num desc
+        <if test="limit != null and limit != ''">
+            limit 0,${limit}
+        </if>
+    </select>
+
+    <select id="queryGoodsItem2" resultType="Map" parameterType="Map">
+        select sum(add_num) as query_add_num,goods_id
+        from goods_item
+        where 1=1
+        <if test="goodsIds != null and goodsIds.size >0">
+            and goods_item.goods_id in
+            <foreach collection="goodsIds" item="goodsId" open="(" close=")" separator=",">
+                #{goodsId}
+            </foreach>
+        </if>
+        <if test="enddatetime != null and enddatetime != ''">
+            <![CDATA[and goods_item.create_time <= #{enddatetime}]]>
+        </if>
+        and goods_item.create_time >=(
+        select min(goods_item.create_time )
+        from goods_item
+        where 1=1
+        <if test="goodsIds != null and goodsIds.size >0">
+            and goods_item.goods_id in
+            <foreach collection="goodsIds" item="goodsId" open="(" close=")" separator=",">
+                #{goodsId}
+            </foreach>
+        </if>
+        and goods_item.create_time >= #{startdatetime}
+        <if test="enddatetime != null and enddatetime != ''">
+            <![CDATA[and goods_item.create_time <= #{enddatetime}]]>
+        </if>
+        )
+        group by goods_id
+    </select>
+
+    <select id="queryGoodsItems" parameterType="Map" resultType="Map">
+        select goods_item.*,goods.goods_id as goods_id_true
+        from goods_item
+        left join goods on goods.id = goods_item.goods_id
+        where goods_item.goods_id = #{goods_id}
+        <if test="startdatetime != nulll and startdatetime != ''">
+            and goods_item.create_time >= #{startdatetime}
+        </if>
+        <if test="enddatetime != null and enddatetime != ''">
+            <![CDATA[and goods_item.create_time <= #{enddatetime}]]>
+        </if>
+        order by goods_item.create_time desc
+    </select>
+
+    <select id="queryLastRecord" resultType="cn.edu.hpu.autoweb.entity.ExecRecord">
+        select * from exec_record order by create_time desc limit 0,1
+    </select>
+
+    <select id="queryGoodsCounts" resultType="Integer">
+        select count(*) from goods
+    </select>
+
+    <select id="queryTodayNewGoodsCounts" parameterType="Map" resultType="Integer">
+        select count(*) from goods where create_time >= #{todayStartTime}
+    </select>
+
+    <select id="queryTodayMaxAddNum" parameterType="Map" resultType="Integer">
+        select max(tmp.add_num) as maxNum
+        from ${tmp_table} as tmp
+    </select>
+
+    <select id="queryUserGoodsByUserId" parameterType="Map" resultType="Map">
+        select * from user_goods where userId = #{userId}
+    </select>
+
+    <delete id="deleteUserGoods" parameterType="Map">
+        delete from user_goods where userId = #{userID} and goods_id = #{goodsID}
+    </delete>
+
+    <select id="queryGoodsById" parameterType="String" resultType="Map">
+        select *
+        from goods
+        where 1=1
+        and goods.id = #{goodsId}
+    </select>
+
+    <select id="queryToDayGoods" parameterType="Map" resultType="Map">
+        select goods.*
+        from ${tmp_table} as tmp
+        inner join goods on tmp.goods_id = goods.id
+        where 1=1
+        <if test="goods_name != null and goods_name != ''">
+            and goods.goods_name like '%${goods_name}%'
+            or goods.goods_id like '%${goods_name}%'
+        </if>
+        order by goods.add_num desc,goods.sell_num desc
+    </select>
+
+    <select id="queryHistoryGoods" parameterType="Map" resultType="Map">
+        select
+        '${tmp_table}' as tmp,
+        goods.id,goods.goods_id,goods.goods_name,goods.goods_price,tmp.sell_num,tmp.add_num,tmp.edit_time,goods.create_time,goods.goods_picture_url,
+        goods.goods_url
+        from ${tmp_table} as tmp
+        inner join goods on tmp.goods_id = goods.id
+        where 1=1
+        <if test="goods_name != null and goods_name != ''">
+            and goods.goods_name like '%${goods_name}%'
+            or goods.goods_id like '%${goods_name}%'
+        </if>
+        order by tmp.add_num desc,tmp.sell_num desc
+    </select>
+
+    <select id="queryTmpGoods" parameterType="String" resultType="Map">
+         select
+        goods.id,goods.goods_id,goods.goods_name,goods.goods_price,tmp.sell_num,tmp.add_num,tmp.edit_time,goods.create_time,goods.goods_picture_url
+        from ${tmp} as tmp
+        inner join goods on tmp.goods_id = goods.id
+        where 1=1 and tmp.goods_id = #{goodsId}
+    </select>
+</mapper>

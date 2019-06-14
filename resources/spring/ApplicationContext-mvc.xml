@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd	
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 访问路径不区分大小写 -->
+	<bean id="matcher" class="cn.edu.hpu.autoweb.util.CaseInsenseticePathMatcher" />
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		<property name="pathMatcher" ref="matcher" />
+	</bean>
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="pathMatcher" ref="matcher" />
+	</bean>
+	
+	<mvc:default-servlet-handler />
+
+	<context:component-scan base-package="cn.edu.hpu.autoweb.controller" />
+
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	     <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+         <property name="contentType" value="text/html"/>     
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<bean id="exceptionResolver" class="cn.edu.hpu.autoweb.resolver.MyExceptionResolver"></bean>
+
+	<mvc:annotation-driven />
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**/**" />
+			<mvc:exclude-mapping path="/" />
+			<mvc:exclude-mapping path="/bootstrap/**" />
+			<mvc:exclude-mapping path="/travel/**" />
+			<mvc:exclude-mapping path="/travelbefore/**" />
+			<mvc:exclude-mapping path="/ecommerce/**" />
+			<mvc:exclude-mapping path="/ecommerceBefore/**" />
+			<mvc:exclude-mapping path="/highcharts/**" />
+			<mvc:exclude-mapping path="/Home/**" />
+			<mvc:exclude-mapping path="/Customer/**" />
+			<bean class="cn.edu.hpu.autoweb.interceptor.LoginHandlerInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 上传拦截，如最大上传值及最小上传值 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize">
+			<value>104857600</value>
+		</property>
+		<property name="maxInMemorySize">
+			<value>4096</value>
+		</property>
+		<property name="defaultEncoding">
+			<value>utf-8</value>
+		</property>
+	</bean>
+</beans>

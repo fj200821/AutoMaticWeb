@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SystemDictMapper">
+    <select id="queryDictCodeByPCode" parameterType="Map" resultType="Map">
+        SELECT * FROM systemdict WHERE PCode = #{pcode} order by name desc
+    </select>
+
+    <select id="queryDictByCode" parameterType="Map" resultType="Map">
+        select * from systemdict WHERE Code = #{pcode} and PId = -1
+    </select>
+
+    <select id="queryIconAll" resultType="Map">
+        SELECT * FROM systemicon
+    </select>
+</mapper>
