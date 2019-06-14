@@ -70,7 +70,7 @@ public class AutoExecService extends BaseService {
      * 定时搜寻店铺
      * @throws Exception
      */
-    @Scheduled(cron = "0 0 6,9,12,15,18,22 * * ?")
+//    @Scheduled(cron = "0 0 6,9,12,15,18,22 * * ?")
     public void execCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -101,7 +101,7 @@ public class AutoExecService extends BaseService {
      * 每小时执行一次，包括top100,活动，好货，秒杀，值点精选，临时表（这些数据量较少，且意义较大，所以更新频率加大）
      * @throws Exception
      */
-    @Scheduled(cron = "0 10 */1 * * ?")
+//    @Scheduled(cron = "0 10 */1 * * ?")
     public void execTmpCMD() throws Exception{
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -168,7 +168,7 @@ public class AutoExecService extends BaseService {
      * 每天凌晨寻找新的店铺（先看下平均执行时间，如果没问题，可以加大频率）
      * @throws Exception
      */
-    @Scheduled(cron = "0 3 0 * * ?")
+//    @Scheduled(cron = "0 3 0 * * ?")
     public void execCMDUpdateCategory() throws Exception {
         //凌晨创建新的分表
         PageData pd = new PageData();
@@ -237,7 +237,7 @@ public class AutoExecService extends BaseService {
      * 服务器上有这个，笔记本不能有
      * @throws Exception
      */
-//    @Scheduled(cron = "0 */5 * * * ?")
+    @Scheduled(cron = "0 */5 * * * ?")
     public void check() throws Exception {
         List<Map> notConfirm = (List<Map>) daoSupport.findForList("ExecRecordMapper.queryRecord",null);
         if(null != notConfirm && notConfirm.size() > 0){
