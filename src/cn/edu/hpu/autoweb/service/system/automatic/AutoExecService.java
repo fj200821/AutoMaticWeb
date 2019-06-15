@@ -26,9 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -67,8 +65,10 @@ public class AutoExecService extends BaseService {
 //    }
 
     private boolean isExecCMD = false;
+
     /**
      * 定时搜寻店铺
+     *
      * @throws Exception
      */
     @Scheduled(cron = "0 0 6,9,12,15,18,22 * * ?")
@@ -82,28 +82,29 @@ public class AutoExecService extends BaseService {
         String pythonPath = ConfigReader.getAttr("pythonPath");
         String pythonFilePath = ConfigReader.getAttr("pyFilePathByShop");
         //按照店铺爬取
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //每次爬取完店铺后，都要检查一下，是否有未更新的店铺
         pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-        try{
-            execCMD(pythonPath,pythonFilePath,datetime);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath, datetime);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         execRecord.setEnd_Time(new Date());
-        commonService.insert(ExecRecord.class,execRecord,"exec_record");
+        commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
 
     /**
      * 每小时执行一次，包括top100,活动，好货，秒杀，值点精选，临时表（这些数据量较少，且意义较大，所以更新频率加大）
+     *
      * @throws Exception
      */
     @Scheduled(cron = "0 10 */1 * * ?")
-    public void execTmpCMD() throws Exception{
+    public void execTmpCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
         execRecord.setIs_Confirm(false);
@@ -113,71 +114,72 @@ public class AutoExecService extends BaseService {
         String pythonPath = ConfigReader.getAttr("pythonPath");
         String pythonFilePath = ConfigReader.getAttr("pyFilePathByTop100");
         //按照top100
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照活动
         pythonFilePath = ConfigReader.getAttr("pyFilePathByActivity");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照以MertialID发起的活动
         pythonFilePath = ConfigReader.getAttr("pyFilePathByMertial");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照秒杀
         pythonFilePath = ConfigReader.getAttr("pyFilePathByKill");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照好货
         pythonFilePath = ConfigReader.getAttr("pyFilePathByGoodThing");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照值点精选
         pythonFilePath = ConfigReader.getAttr("pyFilePathByZhiDian");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照临时表
         pythonFilePath = ConfigReader.getAttr("pyFilePathByTmp");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         execRecord.setEnd_Time(new Date());
-        commonService.insert(ExecRecord.class,execRecord,"exec_record");
+        commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
 
 
     /**
      * 每天凌晨寻找新的店铺（先看下平均执行时间，如果没问题，可以加大频率）
+     *
      * @throws Exception
      */
     @Scheduled(cron = "0 3 0 * * ?")
     public void execCMDUpdateCategory() throws Exception {
         //凌晨创建新的分表
         PageData pd = new PageData();
-        pd.put("dataBaseName","automatic");
+        pd.put("dataBaseName", "automatic");
         pd.put("tableName", StringUtils.getTempTableName());
-        daoSupport.findForObject("CommonMapper.createSchema",pd);
+        daoSupport.findForObject("CommonMapper.createSchema", pd);
 
-        Map parentDict = StringUtils.toLowerMap(commonService.findById("TmpTableName","Code","systemdict"));
+        Map parentDict = StringUtils.toLowerMap(commonService.findById("TmpTableName", "Code", "systemdict"));
         SystemDict systemDict = new SystemDict();
         systemDict.setDictId(UuidUtil.get32UUID());
         systemDict.setPId(parentDict.get("dictid").toString());
@@ -185,7 +187,7 @@ public class AutoExecService extends BaseService {
         systemDict.setCode(StringUtils.getTempTableName());
         systemDict.setPCode(parentDict.get("code").toString());
         systemDict.setSeq(0);
-        commonService.simpleInsert(SystemDict.class,systemDict,"systemdict");
+        commonService.simpleInsert(SystemDict.class, systemDict, "systemdict");
 
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(false);
@@ -203,70 +205,81 @@ public class AutoExecService extends BaseService {
 //        }
         //执行一遍按照分类爬去，（找到新的商品&新的店铺）
         String pythonFilePath = ConfigReader.getAttr("pyFilePathByCategory");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //执行一遍按照首页精选爬去，（找到新的商品&新的店铺）
         pythonFilePath = ConfigReader.getAttr("pyFilePathByRecommend");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //按照店铺再横向查询更多的新增商品
         pythonFilePath = ConfigReader.getAttr("pyFilePathByShop");
-        try{
-            execCMD(pythonPath,pythonFilePath);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         //有可能上面两次都没有覆盖到某个商品，再将未执行到的商品爬取
         pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-        try{
-            execCMD(pythonPath,pythonFilePath,datetime);
-        }catch (Exception e){
+        try {
+            execCMD(pythonPath, pythonFilePath, datetime);
+        } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
         execRecord.setEnd_Time(new Date());
-        commonService.insert(ExecRecord.class,execRecord,"exec_record");
+        commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
 
 
     /**
      * 服务器上有这个，笔记本不能有
+     *
      * @throws Exception
      */
 //    @Scheduled(cron = "0 */5 * * * ?")
     public void check() throws Exception {
-        List<Map> notConfirm = (List<Map>) daoSupport.findForList("ExecRecordMapper.queryRecord",null);
-        if(null != notConfirm && notConfirm.size() > 0){
-            redisUtil.removePattern(Const.REDISKEY+"*");
-            redisUtil.removePattern(Const.GOODS_REDISKEY+"*");
+        List<Map> notConfirm = (List<Map>) daoSupport.findForList("ExecRecordMapper.queryRecord", null);
+        if (null != notConfirm && notConfirm.size() > 0) {
+            redisUtil.removePattern(Const.REDISKEY + "*");
+            redisUtil.removePattern(Const.GOODS_REDISKEY + "*");
             PageData pd = new PageData();
             //首页信息
             goodsService.getIndexInfo(pd);
             //全部商品
             asyncExecService.refreshRedis();
-            daoSupport.update("ExecRecordMapper.updateRecord",null);
+            daoSupport.update("ExecRecordMapper.updateRecord", null);
         }
     }
 
 
-
     /**
      * 调用CMD
+     *
      * @param pythonPath
      * @param pythonFilePath
      * @param param
      */
-    public void execCMD(String pythonPath,String pythonFilePath,Object param) throws IOException {
+    public void execCMD(String pythonPath, String pythonFilePath, Object param) throws Exception {
         try {
-            logger.info(String.format("调用爬取:%s %s",pythonPath,pythonFilePath));
-            Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s %s",pythonPath,pythonFilePath,param));
-            doWaitFor(process);
-        } catch (IOException e) {
+            logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
+            Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s %s", pythonPath, pythonFilePath, param));
+//            doWaitFor(process);
+            StreamGobbler errorGobbler = new
+                    StreamGobbler(process.getErrorStream(), "ERROR");
+            StreamGobbler outputGobbler = new
+                    StreamGobbler(process.getInputStream(), "OUTPUT");
+            errorGobbler.start();
+            outputGobbler.start();
+
+            int exitVal = process.waitFor();
+            System.out.println("ExitValue: " + exitVal);
+            logger.error("ExitValue: " + exitVal);
+        } catch (Exception e) {
             logger.error("调用爬取失败！==error on python==");
             throw e;
         }
@@ -275,20 +288,33 @@ public class AutoExecService extends BaseService {
 
     /**
      * 调用CMD
+     *
      * @param pythonPath
      * @param pythonFilePath
      */
-    public void execCMD(String pythonPath,String pythonFilePath) throws IOException {
+    public void execCMD(String pythonPath, String pythonFilePath) throws Exception {
         try {
-            logger.info(String.format("调用爬取:%s %s",pythonPath,pythonFilePath));
-            Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s",pythonPath,pythonFilePath));
-            doWaitFor(process);
-        } catch (IOException e) {
+            logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
+            Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s", pythonPath, pythonFilePath));
+            StreamGobbler errorGobbler = new
+                    StreamGobbler(process.getErrorStream(), "ERROR");
+            StreamGobbler outputGobbler = new
+                    StreamGobbler(process.getInputStream(), "OUTPUT");
+            errorGobbler.start();
+            outputGobbler.start();
+
+            int exitVal = process.waitFor();
+            System.out.println("ExitValue: " + exitVal);
+            logger.error("ExitValue: " + exitVal);
+//            doWaitFor(process);
+        } catch (Exception e) {
             logger.error("调用爬取失败！==error on python==");
             throw e;
         }
     }
 
+    //https://blog.csdn.net/aerchi/article/details/7653372
+    //异步写流
     public int doWaitFor(Process process) {
         InputStream in = null;
         InputStream err = null;
@@ -305,14 +331,13 @@ public class AutoExecService extends BaseService {
                         // Print the output of our system call
 //                        Character c = new Character((char) in.read(),"utf-8");
                         int b;
-                        while((b = in.read()) !=-1)  {                           // 将读取到的数据逐个写入内存中
+                        while ((b = in.read()) != -1) {                           // 将读取到的数据逐个写入内存中
                             baos.write(b);
                         }
                         //byte[] arr = baos.toByteArray();                       // 将缓冲区的数据全部获取出来，并赋给arr数组
                         //System.out.println(new String(arr));   // 把整个arr数组都转成字符串
                         System.out.println(baos.toString());
                         baos.reset();
-
 //                        System.out.print(c);
                     }
                     while (err.available() > 0) {
@@ -321,12 +346,13 @@ public class AutoExecService extends BaseService {
 //                        System.out.print(c);
 
                         int b;
-                        while((b = err.read()) !=-1)  {                           // 将读取到的数据逐个写入内存中
+                        while ((b = err.read()) != -1) {                           // 将读取到的数据逐个写入内存中
                             baos.write(b);
                         }
                         //byte[] arr = baos.toByteArray();                       // 将缓冲区的数据全部获取出来，并赋给arr数组
                         //System.out.println(new String(arr));   // 把整个arr数组都转成字符串
                         System.out.println(baos.toString());
+                        baos.reset();
                     }
                     // Ask the process for its exitValue. If the process
                     // is not finished, an IllegalThreadStateException
@@ -337,8 +363,8 @@ public class AutoExecService extends BaseService {
                 } catch (IllegalThreadStateException e) {
                     // Process is not finished yet;
                     // Sleep a little to save on CPU cycles
-                    logger.error("Process Illegal："+e.getMessage());
-                    System.out.print("Process Illegal："+e.getMessage());
+                    logger.error("Process Illegal：" + e.getMessage());
+                    System.out.print("Process Illegal：" + e.getMessage());
                     Thread.currentThread().sleep(500);
                 }
             }
@@ -368,5 +394,28 @@ public class AutoExecService extends BaseService {
             }
         }
         return exitValue;
+    }
+}
+
+
+class StreamGobbler extends Thread {
+    InputStream is;
+    String type;
+
+    StreamGobbler(InputStream is, String type) {
+        this.is = is;
+        this.type = type;
+    }
+
+    public void run() {
+        try {
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+            while ((line = br.readLine()) != null)
+                System.out.println(type + ">" + line);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
     }
 }
