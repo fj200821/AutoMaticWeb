@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -51,26 +52,26 @@ public class AutoExecService extends BaseService {
 
     private Logger logger = LoggerFactory.getLogger(AutoExecService.class);
 
-    public static void main(String[] args){
-        Process process = null;
-        try {
-            String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
-            System.out.println(datetime);
-            process = Runtime.getRuntime().exec(String.format("%s %s \"%s\"",
-                    "F:\\PyCharmProjects\\AutoMatic\\venv\\Scripts\\python.exe",
-                    "F:\\PyCharmProjects\\AutoMatic\\auto_exec_by_time.py", datetime));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        doWaitFor(process);
-    }
+//    public static void main(String[] args){
+//        Process process = null;
+//        try {
+//            String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
+//            System.out.println(datetime);
+//            process = Runtime.getRuntime().exec(String.format("%s %s \"%s\"",
+//                    "F:\\PyCharmProjects\\AutoMatic\\venv\\Scripts\\python.exe",
+//                    "F:\\PyCharmProjects\\AutoMatic\\auto_exec_by_time.py", datetime));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        doWaitFor(process);
+//    }
 
     private boolean isExecCMD = false;
     /**
      * 定时搜寻店铺
      * @throws Exception
      */
-//    @Scheduled(cron = "0 0 6,9,12,15,18,22 * * ?")
+    @Scheduled(cron = "0 0 6,9,12,15,18,22 * * ?")
     public void execCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -101,7 +102,7 @@ public class AutoExecService extends BaseService {
      * 每小时执行一次，包括top100,活动，好货，秒杀，值点精选，临时表（这些数据量较少，且意义较大，所以更新频率加大）
      * @throws Exception
      */
-//    @Scheduled(cron = "0 10 */1 * * ?")
+    @Scheduled(cron = "0 10 */1 * * ?")
     public void execTmpCMD() throws Exception{
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -168,7 +169,7 @@ public class AutoExecService extends BaseService {
      * 每天凌晨寻找新的店铺（先看下平均执行时间，如果没问题，可以加大频率）
      * @throws Exception
      */
-//    @Scheduled(cron = "0 3 0 * * ?")
+    @Scheduled(cron = "0 3 0 * * ?")
     public void execCMDUpdateCategory() throws Exception {
         //凌晨创建新的分表
         PageData pd = new PageData();
@@ -237,7 +238,7 @@ public class AutoExecService extends BaseService {
      * 服务器上有这个，笔记本不能有
      * @throws Exception
      */
-    @Scheduled(cron = "0 */5 * * * ?")
+//    @Scheduled(cron = "0 */5 * * * ?")
     public void check() throws Exception {
         List<Map> notConfirm = (List<Map>) daoSupport.findForList("ExecRecordMapper.queryRecord",null);
         if(null != notConfirm && notConfirm.size() > 0){
@@ -288,25 +289,44 @@ public class AutoExecService extends BaseService {
         }
     }
 
-    public static int doWaitFor(Process process) {
+    public int doWaitFor(Process process) {
         InputStream in = null;
         InputStream err = null;
+        ByteArrayOutputStream baos = null;
         int exitValue = -1; // returned to caller when p is finished
         try {
             in = process.getInputStream();
             err = process.getErrorStream();
+            baos = new ByteArrayOutputStream();   // 在内存中创件可以增长的内存数组
             boolean finished = false; // Set to true when p is finished
             while (!finished) {
                 try {
                     while (in.available() > 0) {
                         // Print the output of our system call
-                        Character c = new Character((char) in.read());
-                        System.out.print(c);
+//                        Character c = new Character((char) in.read(),"utf-8");
+                        int b;
+                        while((b = in.read()) !=-1)  {                           // 将读取到的数据逐个写入内存中
+                            baos.write(b);
+                        }
+                        //byte[] arr = baos.toByteArray();                       // 将缓冲区的数据全部获取出来，并赋给arr数组
+                        //System.out.println(new String(arr));   // 把整个arr数组都转成字符串
+                        System.out.println(baos.toString());
+                        baos.reset();
+
+//                        System.out.print(c);
                     }
                     while (err.available() > 0) {
                         // Print the output of our system call
-                        Character c = new Character((char) err.read());
-                        System.out.print(c);
+//                        Character c = new Character((char) err.read());
+//                        System.out.print(c);
+
+                        int b;
+                        while((b = err.read()) !=-1)  {                           // 将读取到的数据逐个写入内存中
+                            baos.write(b);
+                        }
+                        //byte[] arr = baos.toByteArray();                       // 将缓冲区的数据全部获取出来，并赋给arr数组
+                        //System.out.println(new String(arr));   // 把整个arr数组都转成字符串
+                        System.out.println(baos.toString());
                     }
                     // Ask the process for its exitValue. If the process
                     // is not finished, an IllegalThreadStateException
@@ -317,6 +337,8 @@ public class AutoExecService extends BaseService {
                 } catch (IllegalThreadStateException e) {
                     // Process is not finished yet;
                     // Sleep a little to save on CPU cycles
+                    logger.error("Process Illegal："+e.getMessage());
+                    System.out.print("Process Illegal："+e.getMessage());
                     Thread.currentThread().sleep(500);
                 }
             }
@@ -333,6 +355,13 @@ public class AutoExecService extends BaseService {
             if (err != null) {
                 try {
                     err.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (baos != null) {
+                try {
+                    baos.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
