@@ -71,7 +71,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 0 6,9,12,15,18,22 * * ?")
+    @Scheduled(cron = "0 0 3,6,9,12,15,18,22 * * ?")
     public void execCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -171,7 +171,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 3 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void execCMDUpdateCategory() throws Exception {
         //凌晨创建新的分表
         PageData pd = new PageData();
