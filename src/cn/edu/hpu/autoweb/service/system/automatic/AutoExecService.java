@@ -88,12 +88,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //每次爬取完店铺后，都要检查一下，是否有未更新的店铺
-        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-        try {
-            execCMD(pythonPath, pythonFilePath, datetime);
-        } catch (Exception e) {
-            execRecord.setIs_Success(false);
-        }
+//        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
+//        try {
+//            execCMD(pythonPath, pythonFilePath, datetime);
+//        } catch (Exception e) {
+//            execRecord.setIs_Success(false);
+//        }
         execRecord.setEnd_Time(new Date());
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
@@ -134,12 +134,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //按照秒杀
-        pythonFilePath = ConfigReader.getAttr("pyFilePathByKill");
-        try {
-            execCMD(pythonPath, pythonFilePath);
-        } catch (Exception e) {
-            execRecord.setIs_Success(false);
-        }
+//        pythonFilePath = ConfigReader.getAttr("pyFilePathByKill");
+//        try {
+//            execCMD(pythonPath, pythonFilePath);
+//        } catch (Exception e) {
+//            execRecord.setIs_Success(false);
+//        }
         //按照好货
         pythonFilePath = ConfigReader.getAttr("pyFilePathByGoodThing");
         try {
@@ -155,12 +155,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //按照临时表
-        pythonFilePath = ConfigReader.getAttr("pyFilePathByTmp");
-        try {
-            execCMD(pythonPath, pythonFilePath);
-        } catch (Exception e) {
-            execRecord.setIs_Success(false);
-        }
+//        pythonFilePath = ConfigReader.getAttr("pyFilePathByTmp");
+//        try {
+//            execCMD(pythonPath, pythonFilePath);
+//        } catch (Exception e) {
+//            execRecord.setIs_Success(false);
+//        }
         execRecord.setEnd_Time(new Date());
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
@@ -225,12 +225,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //有可能上面两次都没有覆盖到某个商品，再将未执行到的商品爬取
-        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-        try {
-            execCMD(pythonPath, pythonFilePath, datetime);
-        } catch (Exception e) {
-            execRecord.setIs_Success(false);
-        }
+//        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
+//        try {
+//            execCMD(pythonPath, pythonFilePath, datetime);
+//        } catch (Exception e) {
+//            execRecord.setIs_Success(false);
+//        }
         execRecord.setEnd_Time(new Date());
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
@@ -267,7 +267,7 @@ public class AutoExecService extends BaseService {
     public void execCMD(String pythonPath, String pythonFilePath, Object param) throws Exception {
         try {
             logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
-            Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s %s", pythonPath, pythonFilePath, param));
+            Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s \"%s\"", pythonPath, pythonFilePath, param));
 //            doWaitFor(process);
             StreamGobbler errorGobbler = new
                     StreamGobbler(process.getErrorStream(), "ERROR");
@@ -399,6 +399,7 @@ public class AutoExecService extends BaseService {
 
 
 class StreamGobbler extends Thread {
+    private Logger logger = LoggerFactory.getLogger(StreamGobbler.class);
     InputStream is;
     String type;
 
@@ -412,8 +413,10 @@ class StreamGobbler extends Thread {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             String line = null;
-            while ((line = br.readLine()) != null)
+            while ((line = br.readLine()) != null){
                 System.out.println(type + ">" + line);
+                logger.error(type + ">" + line);
+            }
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }

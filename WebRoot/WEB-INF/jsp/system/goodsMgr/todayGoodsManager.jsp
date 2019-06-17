@@ -312,7 +312,8 @@
                         'href="<%=basePath%>Basic/GoodsMgr/ToDayGoodsDetailManager?goodsId='+ row.id + '">' +
                         '详情'+
                         '</a>';
-                    return synchro+'   '+detail+'   '+collection
+                        //synchro+'   '+
+                    return detail+'   '+collection
                 }
             }]
         });

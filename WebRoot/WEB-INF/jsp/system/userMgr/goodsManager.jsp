@@ -382,7 +382,8 @@
                         'href="<%=basePath%>Basic/UserMgr/GoodsDetailManager?goodsId='+ row.id + '">' +
                         '详情'+
                         '</a>';
-                    return synchro+'   '+detail+'   '+collection
+                        //synchro+'   '+
+                    return detail+'   '+collection
                 }
             }],
             onClickRow:function (row,e,field) {
