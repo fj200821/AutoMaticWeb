@@ -88,12 +88,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //每次爬取完店铺后，都要检查一下，是否有未更新的店铺
-//        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-//        try {
-//            execCMD(pythonPath, pythonFilePath, datetime);
-//        } catch (Exception e) {
-//            execRecord.setIs_Success(false);
-//        }
+        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
+        try {
+            execCMD(pythonPath, pythonFilePath, datetime);
+        } catch (Exception e) {
+            execRecord.setIs_Success(false);
+        }
         execRecord.setEnd_Time(new Date());
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
@@ -103,7 +103,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 10 */1 * * ?")
+    @Scheduled(cron = "0 1 */1 * * ?")
     public void execTmpCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -155,12 +155,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //按照临时表
-//        pythonFilePath = ConfigReader.getAttr("pyFilePathByTmp");
-//        try {
-//            execCMD(pythonPath, pythonFilePath);
-//        } catch (Exception e) {
-//            execRecord.setIs_Success(false);
-//        }
+        pythonFilePath = ConfigReader.getAttr("pyFilePathByTmp");
+        try {
+            execCMD(pythonPath, pythonFilePath);
+        } catch (Exception e) {
+            execRecord.setIs_Success(false);
+        }
         execRecord.setEnd_Time(new Date());
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
@@ -190,7 +190,7 @@ public class AutoExecService extends BaseService {
         commonService.simpleInsert(SystemDict.class, systemDict, "systemdict");
 
         ExecRecord execRecord = new ExecRecord();
-        execRecord.setIs_Success(false);
+        execRecord.setIs_Success(true);
         execRecord.setIs_Confirm(false);
         execRecord.setType("ByCategory");
         execRecord.setCreate_Time(new Date());
@@ -225,12 +225,12 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         //有可能上面两次都没有覆盖到某个商品，再将未执行到的商品爬取
-//        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-//        try {
-//            execCMD(pythonPath, pythonFilePath, datetime);
-//        } catch (Exception e) {
-//            execRecord.setIs_Success(false);
-//        }
+        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
+        try {
+            execCMD(pythonPath, pythonFilePath, datetime);
+        } catch (Exception e) {
+            execRecord.setIs_Success(false);
+        }
         execRecord.setEnd_Time(new Date());
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
@@ -413,7 +413,7 @@ class StreamGobbler extends Thread {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             String line = null;
-            while ((line = br.readLine()) != null){
+            while ((line = br.readLine()) != null) {
                 System.out.println(type + ">" + line);
                 logger.error(type + ">" + line);
             }
