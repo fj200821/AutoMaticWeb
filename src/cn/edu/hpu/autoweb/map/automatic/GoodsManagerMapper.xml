@@ -88,7 +88,7 @@
         </if>
     </select>
 
-    <select id="queryGoodsItem2" resultType="Map" parameterType="Map">
+    <select id="queryGoodsItem2" resultType="Map" parameterType="Map">queryGoodsForMy
         select sum(add_num) as query_add_num,goods_id
         from goods_item
         where 1=1
@@ -181,7 +181,7 @@
         select
         '${tmp_table}' as tmp,
         goods.id,goods.goods_id,goods.goods_name,goods.goods_price,tmp.sell_num,tmp.add_num,tmp.edit_time,goods.create_time,goods.goods_picture_url,
-        goods.goods_url
+        goods.goods_url,goods.biz_type
         from ${tmp_table} as tmp
         inner join goods on tmp.goods_id = goods.id
         where 1=1

@@ -243,6 +243,16 @@
                         '</div>';
                 }
             },{
+                field: 'biz_type',title: '数据源',align:'center',
+                formatter:function(value,row,index){
+                    if (row.biz_type == 1){
+                        return '<span style="color: green">鲁班</span>'
+                    }else{
+                        return '<span style="color: red">值点/自媒体</span>'
+                    }
+                    // return "<a href='"+row.goods_url+"' target='_Blank'>"+row.goods_name+"</a>";
+                }
+            },{
                 field: 'goods_name',title: '商品名称',align:'center',
                 formatter:function(value,row,index){
                     return "<a href='"+row.goods_url+"' target='_Blank'>"+row.goods_name+"</a>";
