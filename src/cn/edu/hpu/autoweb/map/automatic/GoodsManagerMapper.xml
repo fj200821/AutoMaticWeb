@@ -88,7 +88,7 @@
         </if>
     </select>
 
-    <select id="queryGoodsItem2" resultType="Map" parameterType="Map">queryGoodsForMy
+    <select id="queryGoodsItem2" resultType="Map" parameterType="Map">
         select sum(add_num) as query_add_num,goods_id
         from goods_item
         where 1=1

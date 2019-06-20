@@ -312,4 +312,37 @@ public class GoodsController extends BaseController {
         return mv;
     }
 
+
+    @RequestMapping("/TodayCreateGoodsManager")
+    public ModelAndView createdTodayCreateGoodsManager() throws Exception {
+        ModelAndView mv = new ModelAndView("system/goodsMgr/todayCreateGoodsManager");
+        List<Integer> goodsIDs = new ArrayList<>();
+        SystemUser user = (SystemUser) getRequest().getSession().getAttribute(Const.SESSION_USER);
+        PageData pd = new PageData();
+        pd.put("userId", user.getUserId());
+        Map result = goodsService.queryUserGoodsByUserId(pd);
+        List<Map> rows = (List<Map>) result.get("rows");
+        for (Map row : rows) {
+            goodsIDs.add(Integer.parseInt(row.get("goods_id").toString()));
+        }
+        mv.addObject("hasCollectionGoodsID", goodsIDs);
+        return mv;
+    }
+
+    @RequestMapping("/ToDayCreateGoodsDetailManager")
+    public ModelAndView createdToDayCreateGoodsDetailManager() throws Exception {
+        ModelAndView mv = new ModelAndView("system/goodsMgr/toDayCreateGoodsDetailManager");
+        PageData pd = getPageData();
+        Map detail = goodsService.queryGoodsById(pd.get("goodsId").toString());
+        mv.addObject("detail", detail);
+        BigDecimal sell_unm = new BigDecimal(detail.get("sell_num").toString());
+        BigDecimal add_unm = new BigDecimal(detail.get("add_num").toString());
+        BigDecimal rate = BigDecimal.ZERO;
+        if (!sell_unm.equals(BigDecimal.ZERO)) {
+            rate = add_unm.divide(sell_unm, 3, BigDecimal.ROUND_HALF_UP);
+        }
+        mv.addObject("rate", (rate.multiply(new BigDecimal(100))).stripTrailingZeros().toPlainString());
+        mv.addObject("goodsId", pd.get("goodsId"));
+        return mv;
+    }
 }

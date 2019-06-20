@@ -49,6 +49,16 @@ public class AsyncExecService extends BaseService {
         Calendar canlendar = Calendar.getInstance();
         canlendar.add(Calendar.DATE, -1);
         Date date = canlendar.getTime();
+
+        PageData ordersPage1 = new PageData();
+        ordersPage1.put("firstCategory_id","");
+        ordersPage1.put("secondCategory_id","");
+        ordersPage1.put("rows",10);
+        ordersPage1.put("order","asc");
+        ordersPage1.put("createStartDateTime","2019-06-20");
+        ordersPage1.put("page",0);
+        setGoodsRedis(ordersPage1);
+
         for(String sort : sorts){
             for(String order : orders){
                 for(int i=0;i<=2;i++){
