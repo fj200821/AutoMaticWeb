@@ -133,12 +133,12 @@
                                     </div>
                                     <div class="table-responsive">
                                         <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
-                                            <div id="toolbar" class="col-md-12" >
-                                                <button id="btn_delete" type="button" onclick="Export();" class="btn btn-default"
-                                                        data-toggle="tooltip" data-placement="bottom" title="导出数据量太大时，速度较慢，请耐心等待。切勿刷新页面！">
-                                                    <span class="glyphicon glyphicon-export" aria-hidden="true"></span>导出
-                                                </button>
-                                            </div>
+                                            <%--<div id="toolbar" class="col-md-12" >--%>
+                                                <%--<button id="btn_delete" type="button" onclick="Export();" class="btn btn-default"--%>
+                                                        <%--data-toggle="tooltip" data-placement="bottom" title="导出数据量太大时，速度较慢，请耐心等待。切勿刷新页面！">--%>
+                                                    <%--<span class="glyphicon glyphicon-export" aria-hidden="true"></span>导出--%>
+                                                <%--</button>--%>
+                                            <%--</div>--%>
                                             <table id="baseTable" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
                                             </table>
                                         </div>
