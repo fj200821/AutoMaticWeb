@@ -50,33 +50,26 @@ public class AutoExecService extends BaseService {
 
     private Logger logger = LoggerFactory.getLogger(AutoExecService.class);
 
-//    public static void main(String[] args){
-//        Process process = null;
-//        try {
-//            String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
-//            System.out.println(datetime);
-//            process = Runtime.getRuntime().exec(String.format("%s %s \"%s\"",
-//                    "F:\\PyCharmProjects\\AutoMatic\\venv\\Scripts\\python.exe",
-//                    "F:\\PyCharmProjects\\AutoMatic\\auto_exec_by_time.py", datetime));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        doWaitFor(process);
-//    }
-
-    private boolean isExecCMD = false;
 
     /**
      * 定时搜寻店铺
      *
      * @throws Exception
      */
-//    @Scheduled(cron = "0 0 3,6,9,12,15,18,22 * * ?")
+    @Scheduled(cron = "0 0 3,6,9,12,15,18,22 * * ?")
     public void execCMD() throws Exception {
+        //上次没结束的，直接结束
+        killPython();
+
+        String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
+        //第一步，销量大于0且在售的。(Type =1 )
+        execTimeCMD(datetime, "1");
+        //第二步，销量大于0且不在售的(Type =2 )
+        execTimeCMD(datetime, "2");
+        //第三步，按照店铺搜寻
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
         execRecord.setIs_Confirm(false);
-        String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
         execRecord.setCreate_Time(new Date());
         execRecord.setType("ByShop");
         String pythonPath = ConfigReader.getAttr("pythonPath");
@@ -87,10 +80,27 @@ public class AutoExecService extends BaseService {
         } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
-        //每次爬取完店铺后，都要检查一下，是否有未更新的店铺
-        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
+        execRecord.setEnd_Time(new Date());
+        commonService.insert(ExecRecord.class, execRecord, "exec_record");
+        //第四步，销量小于0的（优先级最低 Type =3）
+        execTimeCMD(datetime, "3");
+    }
+
+    /**
+     * 执行 销量大于0且在售的。(Type =1 )
+     * 执行 销量大于0且不在售的(Type =2 )
+     * 执行 销量小于0的（优先级最低 Type =3）
+     */
+    public void execTimeCMD(String datetime, String type) throws Exception {
+        ExecRecord execRecord = new ExecRecord();
+        execRecord.setIs_Success(true);
+        execRecord.setIs_Confirm(false);
+        execRecord.setCreate_Time(new Date());
+        execRecord.setType("execTimeCMDAndType=" + type);
+        String pythonPath = ConfigReader.getAttr("pythonPath");
+        String pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
         try {
-            execCMD(pythonPath, pythonFilePath, datetime);
+            execCMD(pythonPath, pythonFilePath, datetime, type);
         } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
@@ -103,12 +113,11 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-//    @Scheduled(cron = "0 1 */1 * * ?")
+    @Scheduled(cron = "0 1 */1 * * ?")
     public void execTmpCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
         execRecord.setIs_Confirm(false);
-        String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
         execRecord.setCreate_Time(new Date());
         execRecord.setType("ByTmps");
         String pythonPath = ConfigReader.getAttr("pythonPath");
@@ -171,7 +180,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-//    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void execCMDUpdateCategory() throws Exception {
         //凌晨创建新的分表
         PageData pd = new PageData();
@@ -217,6 +226,14 @@ public class AutoExecService extends BaseService {
         } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
+        execRecord.setEnd_Time(new Date());
+        commonService.insert(ExecRecord.class, execRecord, "exec_record");
+
+        //第一步，销量大于0且在售的。(Type =1 )
+        execTimeCMD(datetime, "1");
+        //第二步，销量大于0且不在售的(Type =2 )
+        execTimeCMD(datetime, "2");
+
         //按照店铺再横向查询更多的新增商品
         pythonFilePath = ConfigReader.getAttr("pyFilePathByShop");
         try {
@@ -224,15 +241,8 @@ public class AutoExecService extends BaseService {
         } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
-        //有可能上面两次都没有覆盖到某个商品，再将未执行到的商品爬取
-        pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
-        try {
-            execCMD(pythonPath, pythonFilePath, datetime);
-        } catch (Exception e) {
-            execRecord.setIs_Success(false);
-        }
-        execRecord.setEnd_Time(new Date());
-        commonService.insert(ExecRecord.class, execRecord, "exec_record");
+        //第四步，销量小于0的（优先级最低 Type =3）
+        execTimeCMD(datetime, "3");
     }
 
 
@@ -241,7 +251,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 */5 * * * ?")
+//    @Scheduled(cron = "0 */5 * * * ?")
     public void check() throws Exception {
         List<Map> notConfirm = (List<Map>) daoSupport.findForList("ExecRecordMapper.queryRecord", null);
         if (null != notConfirm && notConfirm.size() > 0) {
@@ -257,6 +267,57 @@ public class AutoExecService extends BaseService {
     }
 
 
+    public void killPython() throws Exception {
+        try {
+            logger.error("尚有未结束的进程，杀死");
+            Process process = Runtime.getRuntime().exec("taskkill /im python.exe /f");
+            StreamGobbler errorGobbler = new
+                    StreamGobbler(process.getErrorStream(), "ERROR");
+            StreamGobbler outputGobbler = new
+                    StreamGobbler(process.getInputStream(), "OUTPUT");
+            errorGobbler.start();
+            outputGobbler.start();
+            int exitVal = process.waitFor();
+            logger.error("ExitValue: " + exitVal);
+        } catch (Exception e) {
+            logger.error("调用爬取失败！==error on python==");
+            throw e;
+        }
+    }
+
+
+    /**
+     * 调用爬取，不确定参数
+     *
+     * @param pythonPath
+     * @param pythonFilePath
+     * @param param
+     * @throws Exception
+     */
+    public void execCMD(String pythonPath, String pythonFilePath, Object... param) throws Exception {
+        try {
+            logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(String.format("cmd /c %s %s ", pythonPath, pythonFilePath));
+            for (Object obj : param) {
+                stringBuilder.append(String.format("%s", obj));
+            }
+            Process process = Runtime.getRuntime().exec(stringBuilder.toString());
+            StreamGobbler errorGobbler = new
+                    StreamGobbler(process.getErrorStream(), "ERROR");
+            StreamGobbler outputGobbler = new
+                    StreamGobbler(process.getInputStream(), "OUTPUT");
+            errorGobbler.start();
+            outputGobbler.start();
+            int exitVal = process.waitFor();
+            logger.error("ExitValue: " + exitVal);
+        } catch (Exception e) {
+            logger.error("调用爬取失败！==error on python==");
+            throw e;
+        }
+    }
+
+
     /**
      * 调用CMD
      *
@@ -268,14 +329,12 @@ public class AutoExecService extends BaseService {
         try {
             logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
             Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s \"%s\"", pythonPath, pythonFilePath, param));
-//            doWaitFor(process);
             StreamGobbler errorGobbler = new
                     StreamGobbler(process.getErrorStream(), "ERROR");
             StreamGobbler outputGobbler = new
                     StreamGobbler(process.getInputStream(), "OUTPUT");
             errorGobbler.start();
             outputGobbler.start();
-
             int exitVal = process.waitFor();
             System.out.println("ExitValue: " + exitVal);
             logger.error("ExitValue: " + exitVal);
