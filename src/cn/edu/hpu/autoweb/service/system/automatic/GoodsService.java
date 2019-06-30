@@ -123,6 +123,9 @@ public class GoodsService extends BaseService {
         if (pd.containsKey("goods_name")) {
             rediskey += pd.get("goods_name").toString();
         }
+        if (pd.containsKey("biz_type")) {
+            rediskey += pd.get("biz_type").toString();
+        }
         if (redisUtil.exists(rediskey)) {
             return (Map) redisUtil.get(rediskey);
         } else {

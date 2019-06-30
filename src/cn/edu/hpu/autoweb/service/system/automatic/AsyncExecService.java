@@ -55,7 +55,7 @@ public class AsyncExecService extends BaseService {
         ordersPage1.put("secondCategory_id","");
         ordersPage1.put("rows",10);
         ordersPage1.put("order","asc");
-        ordersPage1.put("createStartDateTime","2019-06-20");
+        ordersPage1.put("createStartDateTime","");
         ordersPage1.put("page",0);
         setGoodsRedis(ordersPage1);
 

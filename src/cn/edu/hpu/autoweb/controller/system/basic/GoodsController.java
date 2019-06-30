@@ -331,7 +331,7 @@ public class GoodsController extends BaseController {
 
     @RequestMapping("/ToDayCreateGoodsDetailManager")
     public ModelAndView createdToDayCreateGoodsDetailManager() throws Exception {
-        ModelAndView mv = new ModelAndView("system/goodsMgr/toDayCreateGoodsDetailManager");
+        ModelAndView mv = new ModelAndView("system/goodsMgr/todayCreateGoodsDetailManager");
         PageData pd = getPageData();
         Map detail = goodsService.queryGoodsById(pd.get("goodsId").toString());
         mv.addObject("detail", detail);

@@ -78,6 +78,11 @@
                                         <div class="row" style="margin-left: 20px;">
                                             <div class="form-group">
                                                 <div class="col-md-2">
+                                                    <label class="control-label">数据源</label>
+                                                    <select id="dataSource" name="dataSource" class="form-control input-sm">
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
                                                     <label class="control-label">关键字</label>
                                                     <input id="nameQuery"  name="goods_name" type="text" class="form-control input-sm" placeholder="关键字">
                                                 </div>
@@ -118,6 +123,8 @@
     var hasCollectionGoodsID = [];
 
     $(function () {
+        loadSelectWithPara('dataSource',{pcode:'DataSource'},'code','name','<%=basePath%>Basic/SystemDict/queryDictCodeByPCode');
+        $("#dataSource ").get(0).selectedIndex=1;
         hasCollectionGoodsID = ${hasCollectionGoodsID}
         query();
     });
@@ -132,6 +139,7 @@
         $('#confirmModal3').modal('hide');
         var postData = convertArray($("#queryForm").serializeArray());
         var temp = {
+            biz_type:postData['dataSource'],
             goods_name:postData['goods_name']
         };
         var form = $("<form>");
@@ -212,7 +220,8 @@
                 page: params.pageNumber,  //页码
                 sort: params.sort,
                 order:params.order,
-                goods_name:postData['goods_name']
+                goods_name:postData['goods_name'],
+                biz_type:postData['dataSource'],
             };
             return temp;
         };
