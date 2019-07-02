@@ -9,5 +9,10 @@
         order by priority desc,id
     </select>
 
-
+    <select id="queryCidsByCategoryIDs" parameterType="Map" resultType="String">
+        select distinct cid from category_cid where category_id in
+        <foreach collection="secondCategory_ids" item="secondCategory_id" open="(" close=")" separator=",">
+            #{secondCategory_id}
+        </foreach>
+    </select>
 </mapper>

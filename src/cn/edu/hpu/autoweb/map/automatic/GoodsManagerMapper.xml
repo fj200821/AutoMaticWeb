@@ -52,23 +52,21 @@
     </select>
 
     <select id="queryGoods2" parameterType="Map" resultType="Map">
-        select distinct goods.* ,shop.shop_id as shop_id_true
+        select goods.*
         from goods
-        left join category_cid on goods.cid = category_cid.cid
-        left join shop on goods.shop_id = shop.id
         where 1=1
-        <if test="secondCategory_ids != null and secondCategory_ids.size > 0">
-            and category_cid.category_id in
-            <foreach collection="secondCategory_ids" item="secondCategoryid" open="(" close=")" separator=",">
-                #{secondCategoryid}
-            </foreach>
-        </if>
-        <if test="secondCategory_id != null and secondCategory_id != ''">
-            and category_cid.category_id = #{secondCategory_id}
-        </if>
+       <if test="cids != null and cids.size > 0">
+           and goods.cid in
+           <foreach collection="cids" item="cid" open="(" close=")" separator=",">
+               #{cid}
+           </foreach>
+       </if>
         <if test="goods_name != null and goods_name != ''">
-            and goods.goods_name like '%${goods_name}%'
-            or goods.goods_id like '%${goods_name}%'
+            and goods.goods_name like '${goods_name}%'
+        </if>
+        <if test="goods_name_all != null and goods_name_all != ''">
+            and goods.goods_name like '%${goods_name_all}%'
+            or goods.goods_id like '%${goods_name_all}%'
         </if>
         <if test="createStartDateTime != null and createStartDateTime != ''">
             and goods.create_time >= CONCAT('${createStartDateTime}' ,' 00:00:00')

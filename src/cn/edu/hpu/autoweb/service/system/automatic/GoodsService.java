@@ -48,14 +48,14 @@ public class GoodsService extends BaseService {
         String rediskey = asyncExecService.getGoodsRedisKey(pd);
         //加载下三页
         String page = pd.get("page").toString();
-        if (pd.containsKey("page")) {
-            for (int i = 1; i <= 1; i++) {
-                PageData pd2 = new PageData();
-                pd2 = pd;
-                pd2.put("page", Integer.valueOf(page) + i);
-                asyncExecService.loadGoodsRedis(pd2);
-            }
-        }
+//        if (pd.containsKey("page")) {
+//            for (int i = 1; i <= 3; i++) {
+//                PageData pd2 = new PageData();
+//                pd2 = pd;
+//                pd2.put("page", Integer.valueOf(page) + i);
+//                asyncExecService.loadGoodsRedis(pd2);
+//            }
+//        }
         if (redisUtil.exists(rediskey)) {
             return (Map) redisUtil.get(rediskey);
         } else {
@@ -80,6 +80,15 @@ public class GoodsService extends BaseService {
                 }
                 pd.put("secondCategory_ids", secondCategory_ids);
             }
+        }else if (pd.containsKey("secondCategory_id")){
+            List<String> secondCategory_ids = new ArrayList<>();
+            secondCategory_ids.add(pd.get("secondCategory_id").toString());
+            pd.put("secondCategory_ids", secondCategory_ids);
+        }
+
+        if(pd.containsKey("secondCategory_ids")){
+            List<String> cids = (List<String>) daoSupport.findForList("CategoryManagerMapper.queryCidsByCategoryIDs", pd);
+            pd.put("cids", cids);
         }
         List<Map> list = ToLowerCaseForList((List<Map>) daoSupport.findForList("GoodsManagerMapper.queryGoods2", pd));
         List<String> ids = new ArrayList<>();
@@ -134,7 +143,6 @@ public class GoodsService extends BaseService {
             return result;
         }
     }
-
 
     public Map queryHistoryGoods(PageData pd) throws Exception {
         String rediskey = Const.REDISKEY;
@@ -332,6 +340,15 @@ public class GoodsService extends BaseService {
                 }
                 pd.put("secondCategory_ids", secondCategory_ids);
             }
+        }else if (pd.containsKey("secondCategory_id")){
+            List<String> secondCategory_ids = new ArrayList<>();
+            secondCategory_ids.add(pd.get("secondCategory_id").toString());
+            pd.put("secondCategory_ids", secondCategory_ids);
+        }
+
+        if(pd.containsKey("secondCategory_ids")){
+            List<String> cids = (List<String>) daoSupport.findForList("CategoryManagerMapper.queryCidsByCategoryIDs", pd);
+            pd.put("cids", cids);
         }
         if (pd.containsKey("page")) {
             if (pd.containsKey("sort") && pd.get("sort") != null) {

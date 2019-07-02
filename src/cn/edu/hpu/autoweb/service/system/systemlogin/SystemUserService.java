@@ -83,7 +83,7 @@ public class SystemUserService extends BaseService{
         systemUser.setEffectStartDate(currentDateTime);
         Calendar aCalendar = Calendar.getInstance();
         aCalendar.setTime(currentDateTime);
-        aCalendar.add(Calendar.DATE, 1);
+        aCalendar.add(Calendar.DATE, 7);
         systemUser.setEffectDate(aCalendar.getTime());
         commonService.insert(SystemUser.class,systemUser,table_systemuser);
 

@@ -129,7 +129,7 @@
                                     </form>
                                     <div class="alert alert-info alert-custom alert-dismissible" role="alert">
                                         <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                                        <i class="fa fa-exclamation-circle m-right-xs"></i><strong>注意!</strong> 数据量太大，首次加载较慢，请耐心等待
+                                        <i class="fa fa-exclamation-circle m-right-xs"></i><strong>注意!</strong> 关键字查询时，尽量使用全称或名称前半部分，使用内容部分时，检索数据量较大，耗时较长
                                     </div>
                                     <div class="table-responsive">
                                         <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
@@ -442,7 +442,7 @@
                     }
                 }
             },{
-                field: 'query_add_num',title: '增量',align:'center',sortable : true,
+                field: 'query_add_num',title: '范围增量',align:'center',
                 formatter:function(value,row,index){
                     if(row.query_add_num <= 0){
                         return  row.query_add_num;

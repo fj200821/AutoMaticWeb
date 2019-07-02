@@ -140,7 +140,6 @@ public class AsyncExecService extends BaseService {
         getGoods(redisKey,pd);
     }
 
-
     @Async
     public void loadGoodsRedis(PageData pd) throws Exception {
         String redisKey = getGoodsRedisKey(pd);
@@ -198,6 +197,15 @@ public class AsyncExecService extends BaseService {
                 }
                 pd.put("secondCategory_ids", secondCategory_ids);
             }
+        }else if (pd.containsKey("secondCategory_id")){
+            List<String> secondCategory_ids = new ArrayList<>();
+            secondCategory_ids.add(pd.get("secondCategory_id").toString());
+            pd.put("secondCategory_ids", secondCategory_ids);
+        }
+
+        if(pd.containsKey("secondCategory_ids")){
+            List<String> cids = (List<String>) daoSupport.findForList("CategoryManagerMapper.queryCidsByCategoryIDs", pd);
+            pd.put("cids", cids);
         }
         if (pd.containsKey("page")) {
             if (pd.containsKey("sort") && pd.get("sort") != null) {
@@ -210,6 +218,20 @@ public class AsyncExecService extends BaseService {
                         Integer.parseInt(pd.get("rows").toString()));
             }
             List<Map> list = ToLowerCaseForList((List<Map>) daoSupport.findForList("GoodsManagerMapper.queryGoods2", pd));
+            if(pd.containsKey("goods_name") &&  !"".equals(pd.get("goods_name").toString()) && list.size() <= 0 ){
+                if (pd.containsKey("sort") && pd.get("sort") != null) {
+                    PageHelper.startPage(
+                            Integer.parseInt(pd.get("page").toString()),
+                            Integer.parseInt(pd.get("rows").toString()), pd.get("sort").toString() + " " + pd.get("order").toString());
+                } else {
+                    PageHelper.startPage(
+                            Integer.parseInt(pd.get("page").toString()),
+                            Integer.parseInt(pd.get("rows").toString()));
+                }
+                pd.put("goods_name_all",pd.get("goods_name"));
+                pd.remove("goods_name");
+                list = ToLowerCaseForList((List<Map>) daoSupport.findForList("GoodsManagerMapper.queryGoods2", pd));
+            }
             List<String> ids = new ArrayList<>();
             for (Map map : list) {
                 ids.add(map.get("id").toString());
