@@ -66,7 +66,7 @@ public class AutoExecService extends BaseService {
         //第一步，销量大于0且在售的。(Type =1 )
         execTimeCMD(datetime, "1");
         //第二步，销量大于0且不在售的(Type =2 )
-        execTimeCMD(datetime, "2");
+//        execTimeCMD(datetime, "2");
         //第三步，按照店铺搜寻
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -238,7 +238,7 @@ public class AutoExecService extends BaseService {
         //第一步，销量大于0且在售的。(Type =1 )
         execTimeCMD(datetime, "1");
         //第二步，销量大于0且不在售的(Type =2 )
-        execTimeCMD(datetime, "2");
+//        execTimeCMD(datetime, "2");
 
         //按照店铺再横向查询更多的新增商品
         pythonFilePath = ConfigReader.getAttr("pyFilePathByShop");
