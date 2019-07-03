@@ -15,6 +15,7 @@ import cn.edu.hpu.autoweb.util.mes.DateTimeUtils;
 import cn.edu.hpu.autoweb.util.mes.DateUtils;
 import cn.edu.hpu.autoweb.util.mes.StringUtils;
 import com.fr.third.org.apache.poi.hssf.record.formula.functions.False;
+import com.fr.third.org.apache.poi.hssf.record.formula.functions.True;
 import org.apache.struts2.convention.annotation.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-//    @Scheduled(cron = "0 0 3,6,9,12,15,18,22 * * ?")
+    @Scheduled(cron = "0 0 3,6,9,12,15,18,22 * * ?")
     public void execCMD() throws Exception {
         //上次没结束的，直接结束
         killPython();
@@ -81,6 +82,7 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         execRecord.setEnd_Time(new Date());
+        execRecord.setIs_Confirm(true);
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
         //第四步，销量小于0的（优先级最低 Type =3）
         execTimeCMD(datetime, "3");
@@ -105,6 +107,7 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         execRecord.setEnd_Time(new Date());
+        execRecord.setIs_Confirm(true);
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
     }
 
@@ -113,7 +116,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-//    @Scheduled(cron = "0 1 */1 * * ?")
+    @Scheduled(cron = "0 1 */1 * * ?")
     public void execTmpCMD() throws Exception {
         ExecRecord execRecord = new ExecRecord();
         execRecord.setIs_Success(true);
@@ -180,8 +183,10 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-//    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void execCMDUpdateCategory() throws Exception {
+        //上次没结束的，直接结束
+        killPython();
         //凌晨创建新的分表
         PageData pd = new PageData();
         pd.put("dataBaseName", "automatic");
@@ -227,6 +232,7 @@ public class AutoExecService extends BaseService {
             execRecord.setIs_Success(false);
         }
         execRecord.setEnd_Time(new Date());
+        execRecord.setIs_Confirm(true);
         commonService.insert(ExecRecord.class, execRecord, "exec_record");
 
         //第一步，销量大于0且在售的。(Type =1 )
@@ -251,7 +257,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 */5 * * * ?")
+//    @Scheduled(cron = "0 */5 * * * ?")
     public void check() throws Exception {
         List<Map> notConfirm = (List<Map>) daoSupport.findForList("ExecRecordMapper.queryRecord", null);
         if (null != notConfirm && notConfirm.size() > 0) {
