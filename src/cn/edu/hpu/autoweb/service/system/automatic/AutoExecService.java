@@ -57,7 +57,7 @@ public class AutoExecService extends BaseService {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 0 3,6,9,12,15,18,22 * * ?")
+    @Scheduled(cron = "0 0 3,6,9,12,15,18,21 * * ?")
     public void execCMD() throws Exception {
         //上次没结束的，直接结束
         killPython();
