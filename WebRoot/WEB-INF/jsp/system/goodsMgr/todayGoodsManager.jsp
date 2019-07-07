@@ -124,7 +124,7 @@
 
     $(function () {
         loadSelectWithPara('dataSource',{pcode:'DataSource'},'code','name','<%=basePath%>Basic/SystemDict/queryDictCodeByPCode');
-        $("#dataSource ").get(0).selectedIndex=0;
+        $("#dataSource ").get(0).selectedIndex=1;
         hasCollectionGoodsID = ${hasCollectionGoodsID}
         query();
     });
