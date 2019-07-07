@@ -244,9 +244,11 @@
                     t.setTime(row.create_time);
                     return t.format("yyyy-MM-dd hh:mm:ss");
                 }
-            },{
-                field: 'goods_id_true',title: '商品ID',align:'center'
-            },{
+            }
+            // ,{
+            //     field: 'goods_id_true',title: '商品ID',align:'center'
+            // }
+            ,{
                 field: 'sell_num',title: '总售量',align:'center'
             },{
                 field: 'add_num',title: '较上次增量',align:'center'
