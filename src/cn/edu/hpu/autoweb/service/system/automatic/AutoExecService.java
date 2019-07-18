@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Transactional
 @Service
@@ -65,7 +66,7 @@ public class AutoExecService extends BaseService {
         String datetime = DateTimeUtils.dateTimeFormattedEN(new Date());
         //第一步，销量大于0且在售的。(Type =1 )
         execTimeCMD(datetime, "1");
-        //第二步，销量大于0且不在售的(Type =2 )
+        //第二步，销量大于0且不在售的(Type =2 )·12·1·
 //        execTimeCMD(datetime, "2");
         //第三步，按照店铺搜寻
         ExecRecord execRecord = new ExecRecord();
@@ -315,8 +316,15 @@ public class AutoExecService extends BaseService {
                     StreamGobbler(process.getInputStream(), "OUTPUT");
             errorGobbler.start();
             outputGobbler.start();
-            int exitVal = process.waitFor();
-            logger.error("ExitValue: " + exitVal);
+            if (process.waitFor(1*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
+                /* 退出码为0时 属于正常退出**/
+                if (process.exitValue() != 0){//执行shell出错 记录错误信息
+                    logger.error("ExitValue: 异常结束");
+                }
+            }else {
+                process.destroy();//kill 子进程
+                logger.error("主动杀掉");
+            }
         } catch (Exception e) {
             logger.error("调用爬取失败！==error on python==");
             throw e;
@@ -341,9 +349,15 @@ public class AutoExecService extends BaseService {
                     StreamGobbler(process.getInputStream(), "OUTPUT");
             errorGobbler.start();
             outputGobbler.start();
-            int exitVal = process.waitFor();
-            System.out.println("ExitValue: " + exitVal);
-            logger.error("ExitValue: " + exitVal);
+            if (process.waitFor(1*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
+                /* 退出码为0时 属于正常退出**/
+                if (process.exitValue() != 0){//执行shell出错 记录错误信息
+                    logger.error("ExitValue: 异常结束");
+                }
+            }else {
+                process.destroy();//kill 子进程
+                logger.error("主动杀掉");
+            }
         } catch (Exception e) {
             logger.error("调用爬取失败！==error on python==");
             throw e;
@@ -368,10 +382,19 @@ public class AutoExecService extends BaseService {
             errorGobbler.start();
             outputGobbler.start();
 
-            int exitVal = process.waitFor();
-            System.out.println("ExitValue: " + exitVal);
-            logger.error("ExitValue: " + exitVal);
+//            int exitVal = process.waitFor();
+//            System.out.println("ExitValue: " + exitVal);
+//            logger.error("ExitValue: " + exitVal);
 //            doWaitFor(process);
+            if (process.waitFor(1*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
+                /* 退出码为0时 属于正常退出**/
+                if (process.exitValue() != 0){//执行shell出错 记录错误信息
+                    logger.error("ExitValue: 异常结束");
+                }
+            }else {
+                process.destroy();//kill 子进程
+                logger.error("主动杀掉");
+            }
         } catch (Exception e) {
             logger.error("调用爬取失败！==error on python==");
             throw e;
