@@ -102,8 +102,23 @@ public class AutoExecService extends BaseService {
         execRecord.setType("execTimeCMDAndType=" + type);
         String pythonPath = ConfigReader.getAttr("pythonPath");
         String pythonFilePath = ConfigReader.getAttr("pyFilePathByTime");
+        String update_type = "update";
+        if(DateUtils.formatDate(new Date(),"HH").equals("00")||
+                DateUtils.formatDate(new Date(),"HH").equals("01")||
+                DateUtils.formatDate(new Date(),"HH").equals("02")||
+                DateUtils.formatDate(new Date(),"HH").equals("03")||
+                DateUtils.formatDate(new Date(),"HH").equals("06")||
+                DateUtils.formatDate(new Date(),"HH").equals("12")||
+                DateUtils.formatDate(new Date(),"HH").equals("18")||
+                DateUtils.formatDate(new Date(),"HH").equals("21")){
+            update_type = "update_num";
+        }
         try {
-            execCMD(pythonPath, pythonFilePath, datetime, type);
+            if(type.equals("1")){
+                execCMD(pythonPath, pythonFilePath, 2,datetime, type,update_type);
+            }else{
+                execCMD(pythonPath, pythonFilePath,1, datetime, type,update_type);
+            }
         } catch (Exception e) {
             execRecord.setIs_Success(false);
         }
@@ -293,15 +308,7 @@ public class AutoExecService extends BaseService {
     }
 
 
-    /**
-     * 调用爬取，不确定参数
-     *
-     * @param pythonPath
-     * @param pythonFilePath
-     * @param param
-     * @throws Exception
-     */
-    public void execCMD(String pythonPath, String pythonFilePath, Object... param) throws Exception {
+    public void execCMD(String pythonPath, String pythonFilePath,int house, Object... param) throws Exception {
         try {
             logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
             StringBuilder stringBuilder = new StringBuilder();
@@ -316,7 +323,7 @@ public class AutoExecService extends BaseService {
                     StreamGobbler(process.getInputStream(), "OUTPUT");
             errorGobbler.start();
             outputGobbler.start();
-            if (process.waitFor(1*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
+            if (process.waitFor(house*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
                 /* 退出码为0时 属于正常退出**/
                 if (process.exitValue() != 0){//执行shell出错 记录错误信息
                     logger.error("ExitValue: 异常结束");
@@ -330,6 +337,18 @@ public class AutoExecService extends BaseService {
             throw e;
         }
     }
+
+    /**
+     * 调用爬取，不确定参数
+     *
+     * @param pythonPath
+     * @param pythonFilePath
+     * @param param
+     * @throws Exception
+     */
+//    public void execCMD(String pythonPath, String pythonFilePath, Object... param) throws Exception {
+//        execCMD(pythonPath,pythonFilePath,1,param);
+//    }
 
 
     /**
@@ -364,14 +383,7 @@ public class AutoExecService extends BaseService {
         }
     }
 
-
-    /**
-     * 调用CMD
-     *
-     * @param pythonPath
-     * @param pythonFilePath
-     */
-    public void execCMD(String pythonPath, String pythonFilePath) throws Exception {
+    public void execCMD(String pythonPath, String pythonFilePath,int house) throws Exception {
         try {
             logger.info(String.format("调用爬取:%s %s", pythonPath, pythonFilePath));
             Process process = Runtime.getRuntime().exec(String.format("cmd /c %s %s", pythonPath, pythonFilePath));
@@ -386,7 +398,7 @@ public class AutoExecService extends BaseService {
 //            System.out.println("ExitValue: " + exitVal);
 //            logger.error("ExitValue: " + exitVal);
 //            doWaitFor(process);
-            if (process.waitFor(1*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
+            if (process.waitFor(house*60*60*1000, TimeUnit.MILLISECONDS)){//程序在限定时间内执行完毕
                 /* 退出码为0时 属于正常退出**/
                 if (process.exitValue() != 0){//执行shell出错 记录错误信息
                     logger.error("ExitValue: 异常结束");
@@ -399,6 +411,16 @@ public class AutoExecService extends BaseService {
             logger.error("调用爬取失败！==error on python==");
             throw e;
         }
+    }
+
+    /**
+     * 调用CMD
+     *
+     * @param pythonPath
+     * @param pythonFilePath
+     */
+    public void execCMD(String pythonPath, String pythonFilePath) throws Exception {
+        execCMD(pythonPath,pythonFilePath,1);
     }
 
     //https://blog.csdn.net/aerchi/article/details/7653372
