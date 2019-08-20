@@ -113,7 +113,7 @@
 								<%--<input type="checkbox" id="chkAccept">--%>
 								<%--<label for="chkAccept"></label>--%>
 							<%--</div>--%>
-							您将获得一周（七天）的免费试用账户
+							您将获得一天的免费试用账户
 						</div>
 						<div class="m-top-md p-top-sm">
 							<a href="#" id="registsubmit" class="btn btn-success block">注册</a>
